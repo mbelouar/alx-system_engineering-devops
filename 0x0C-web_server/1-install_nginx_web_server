@@ -1,8 +1,38 @@
 #!/usr/bin/env bash
-# installs nginx and configure it to listen on port 80
-# print "Hello World"
+# Install ngnix into my server
+# Nginx should be listening on port 80
+# curl localhost should result "Hello World!"
 
-sudo apt-get -y update
-sudo apt-get -y install nginx
-echo 'Hello World!' > /var/www/html/index.nginx-debian.html
-sudo service nginx start
+
+# Update apt and Install nginx
+sudo apt -y update
+sudo apt -y install nginx
+
+# Remove and replace /var/www to store static content
+
+rm -rf school
+mkdir school
+touch school/index.html
+echo "Hello World!" > school/index.html
+sudo rm -rf /var/www/school
+sudo mv school /var/www/
+
+# Change the default configuration of nginx
+touch default
+printf %s "server {
+       listen 80;
+       listen [::]:80;
+
+       root /var/www/school;
+       index index.html;
+}
+" > default
+
+# Remove and replace existing configurations
+sudo rm -rf /etc/nginx/sites-available/default
+sudo rm -rf /etc/nginx/sites-enabled/default
+sudo mv default /etc/nginx/sites-available/
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Restart nginx
+sudo service nginx restart
